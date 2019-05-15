@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.CancellationSignal;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.nio.charset.Charset;
@@ -24,10 +25,12 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
     private CancellationSignal cancellationSignal;
     private Context context;
+    private ImageView imageView;
     ChirpConnect chirp;
 
-    public FingerprintHandler(Context mContext, ChirpConnect chirp) {
+    public FingerprintHandler(Context mContext, ChirpConnect chirp ,ImageView imageView) {
         context = mContext;
+        this.imageView = imageView;
         this.chirp = chirp;
     }
 
@@ -58,7 +61,9 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
     //onAuthenticationFailed is called when the fingerprint doesn’t match with any of the fingerprints registered on the device//
 
     public void onAuthenticationFailed() {
-        Toast.makeText(context, "Authentication failed", Toast.LENGTH_LONG).show();
+        Toast.makeText(context, "Authentication failed... Try Again", Toast.LENGTH_LONG).show();
+        //MainActivity m = new MainActivity();
+        //m.authenticate();
     }
 
     @Override
@@ -75,7 +80,8 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
 
         Toast.makeText(context, "Success!", Toast.LENGTH_LONG).show();
 
-        String identifier = "hello saharsh";
+
+        String identifier = "saharsh";
         byte[] payload = identifier.getBytes(Charset.forName("UTF-8"));
 
         ChirpError error = chirp.send(payload);
@@ -83,6 +89,9 @@ public class FingerprintHandler extends FingerprintManager.AuthenticationCallbac
             Log.e("ChirpError: ", error.getMessage());
         } else {
             Log.v("ChirpSDK: ", "Sent " + identifier);
+            imageView.setImageResource(R.drawable.kj_success);
+            new MainActivity().running();
+
         }
     }
 

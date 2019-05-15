@@ -1,9 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".BasicActivity">
 
-</android.support.constraint.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/image"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:id="@+id/email"
+        android:layout_below="@id/image"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Email ID"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        />
+    <EditText
+        android:id="@+id/password"
+        android:layout_below="@id/email"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:hint="Password"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
+        />
+    <Button
+        android:id="@+id/login"
+        android:layout_below="@+id/password"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:textAllCaps="false"
+        android:text="Login"
+        android:background="#444444"
+        android:textColor="@android:color/white"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"        />
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Or authenticate via Fingerprint"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/login"
+        />
+    <TextView
+        android:id="@+id/error"
+        android:layout_marginTop="10dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Unable to Authenticate"
+        android:textColor="@android:color/holo_red_light"
+        android:layout_below="@id/login"
+        android:visibility="gone"
+        />
+
+    <ImageView
+        android:src="@drawable/fingerprint_black"
+        android:layout_below="@id/text"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
+        android:id="@+id/authenticate"
+        android:layout_width="40dp"
+        android:layout_height="40dp" />
+</RelativeLayout>

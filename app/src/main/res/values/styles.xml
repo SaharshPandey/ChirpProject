@@ -6,6 +6,12 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+    </style>
+
+    <style name="Theme.YourApp" parent="@android:style/Theme.Material.Light">
+        <item name="swirl_ridgeColor">?android:attr/textColorSecondary</item>
+        <item name="swirl_errorColor">?android:attr/colorAccent</item>
     </style>
 
 </resources>

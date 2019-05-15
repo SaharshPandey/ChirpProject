@@ -2,8 +2,10 @@ package com.example.finalproject;
 
 import android.app.KeyguardManager;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.hardware.fingerprint.FingerprintManager;
 import android.Manifest;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.security.keystore.KeyGenParameterSpec;
@@ -12,9 +14,16 @@ import android.security.keystore.KeyProperties;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.ActivityCompat;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TextView;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -28,6 +37,10 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.mattprecious.swirl.SwirlView;
+
 import io.chirp.connect.ChirpConnect;
 import io.chirp.connect.models.ChirpError;
 import io.chirp.connect.interfaces.ConnectEventListener;
@@ -41,86 +54,118 @@ public class MainActivity extends AppCompatActivity {
     private KeyStore keyStore;
     private KeyGenerator keyGenerator;
     private TextView errorview;
+    private ImageView imageView;
     private FingerprintManager.CryptoObject cryptoObject;
     private FingerprintManager fingerprintManager;
     private KeyguardManager keyguardManager;
     private ChirpConnect chirp;
 
+
     String CHIRP_APP_KEY = "Cb5c84Eb72b08C89aD4edf3bE";
     String CHIRP_APP_SECRET = "1F2FcE0d59DfEE6B278aBE4e789FEcF7e6907aa0cE71Fcff5b";
-    String CHIRP_APP_CONFIG = "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";
+    String CHIRP_APP_CONFIG = "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";
+
     private static final int RESULT_REQUEST_RECORD_AUDIO = 1;
+    public Typeface MR, MRR;
+    public TextView text1,text2;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.setFinishOnTouchOutside(false);
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            //instantiating the Chirp....
-            chirp = new ChirpConnect(this, CHIRP_APP_KEY, CHIRP_APP_SECRET);
-            ChirpError error = chirp.setConfig(CHIRP_APP_CONFIG);
-            if (error.getCode() == 0) {
-                Log.v("ChirpSDK: ", "Configured ChirpSDK");
-            } else {
-                Log.e("ChirpError: ", error.getMessage());
+        MR = Typeface.createFromAsset(getAssets(), "fonts/myriad.ttf");
+        MRR = Typeface.createFromAsset(getAssets(), "fonts/myriadregular.ttf");
+        text1 = findViewById(R.id.text1);
+        text2 = findViewById(R.id.textView2);
+
+        imageView = findViewById(R.id.imageView);
+
+        text1.setTypeface(MR);
+        text2.setTypeface(MRR);
+//
+//        SwirlView swirlView = findViewById(R.id.swirl);
+//        swirlView.setState(SwirlView.State.ON);
+
+        authenticate();
+
+
+
+    }
+
+    public void running()
+    {
+
+        new GetUrlContentTask().execute("http://[2400:6180:100:d0::4fd:1004]:15000");
+    }
+
+public void authenticate(){
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+        //instantiating the Chirp....
+        chirp = new ChirpConnect(this, CHIRP_APP_KEY, CHIRP_APP_SECRET);
+        ChirpError error = chirp.setConfig(CHIRP_APP_CONFIG);
+        if (error.getCode() == 0) {
+            Log.v("ChirpSDK: ", "Configured ChirpSDK");
+        } else {
+            Log.e("ChirpError: ", error.getMessage());
+        }
+
+
+
+        //Get an instance of KeyguardManager and FingerprintManager//
+        keyguardManager =
+                (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+        fingerprintManager =
+                (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
+
+        errorview = findViewById(R.id.error);
+
+        //Check whether the device has a fingerprint sensor//
+        if (!fingerprintManager.isHardwareDetected()) {
+            // If a fingerprint sensor isn’t available, then inform the user that they’ll be unable to use your app’s fingerprint functionality//
+            errorview.setText("Your device doesn't support fingerprint authentication");
+        }
+        //Check whether the user has granted your app the USE_FINGERPRINT permission//
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+            // If your app doesn't have this permission, then display the following text//
+            errorview.setText("Please enable the fingerprint permission");
+        }
+
+        //Check that the user has registered at least one fingerprint//
+        if (!fingerprintManager.hasEnrolledFingerprints()) {
+            // If the user hasn’t configured any fingerprints, then display the following message//
+            errorview.setText("No fingerprint configured. Please register at least one fingerprint in your device's Settings");
+        }
+
+        //Check that the lockscreen is secured//
+        if (!keyguardManager.isKeyguardSecure()) {
+            // If the user hasn’t secured their lockscreen with a PIN password or pattern, then display the following text//
+            errorview.setText("Please enable lockscreen security in your device's Settings");
+        } else {
+            try {
+                generateKey();
+            } catch (FingerprintException e) {
+                e.printStackTrace();
             }
 
+            if (initCipher()) {
+                //If the cipher is initialized successfully, then create a CryptoObject instance//
+                cryptoObject = new FingerprintManager.CryptoObject(cipher);
 
-
-            //Get an instance of KeyguardManager and FingerprintManager//
-            keyguardManager =
-                    (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-            fingerprintManager =
-                    (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
-
-            errorview = findViewById(R.id.error);
-
-            //Check whether the device has a fingerprint sensor//
-            if (!fingerprintManager.isHardwareDetected()) {
-                // If a fingerprint sensor isn’t available, then inform the user that they’ll be unable to use your app’s fingerprint functionality//
-                errorview.setText("Your device doesn't support fingerprint authentication");
-            }
-            //Check whether the user has granted your app the USE_FINGERPRINT permission//
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-                // If your app doesn't have this permission, then display the following text//
-                errorview.setText("Please enable the fingerprint permission");
-            }
-
-            //Check that the user has registered at least one fingerprint//
-            if (!fingerprintManager.hasEnrolledFingerprints()) {
-                // If the user hasn’t configured any fingerprints, then display the following message//
-                errorview.setText("No fingerprint configured. Please register at least one fingerprint in your device's Settings");
-            }
-
-            //Check that the lockscreen is secured//
-            if (!keyguardManager.isKeyguardSecure()) {
-                // If the user hasn’t secured their lockscreen with a PIN password or pattern, then display the following text//
-                errorview.setText("Please enable lockscreen security in your device's Settings");
-            } else {
-                try {
-                    generateKey();
-                } catch (FingerprintException e) {
-                    e.printStackTrace();
-                }
-
-                if (initCipher()) {
-                    //If the cipher is initialized successfully, then create a CryptoObject instance//
-                    cryptoObject = new FingerprintManager.CryptoObject(cipher);
-
-                    // Here, I’m referencing the FingerprintHandler class that we’ll create in the next section. This class will be responsible
-                    // for starting the authentication process (via the startAuth method) and processing the authentication process events//
-                    FingerprintHandler helper = new FingerprintHandler(this, chirp);
-                    helper.startAuth(fingerprintManager, cryptoObject);
-                }
+                // Here, I’m referencing the FingerprintHandler class that we’ll create in the next section. This class will be responsible
+                // for starting the authentication process (via the startAuth method) and processing the authentication process events//
+                FingerprintHandler helper = new FingerprintHandler(this, chirp,imageView);
+                helper.startAuth(fingerprintManager, cryptoObject);
             }
         }
     }
-
-
+}
 
 
 
@@ -247,6 +292,61 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+    }
+
+
+    private class GetUrlContentTask extends AsyncTask<String, Integer, String> {
+        protected String doInBackground(String... urls) {
+            URL url = null;
+            try {
+                url = new URL(urls[0]);
+                Log.d("check","Url is : " +url);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            HttpURLConnection connection = null;
+            try {
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setRequestMethod("GET");
+                connection.setDoOutput(true);
+                connection.setConnectTimeout(5000);
+                connection.setReadTimeout(5000);
+                connection.connect();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            BufferedReader rd = null;
+
+            try {
+                rd = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String content = "", line;
+                while ((line = rd.readLine()) != null) {
+                    content += line + "\n";
+                }
+                return content;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+        }
+
+        protected void onPostExecute(String result) {
+            // this is executed on the main thread after the process is over
+            // update your UI here
+            /*ImageView imageView = findViewById(R.id.imageView);
+            TextView textView = findViewById(R.id.textView2);
+            */
+            /*setContentView(R.layout.activity_main);
+            imageView.setImageResource(R.drawable.kj_success);
+            text2.setText("Authorised");*/
+
+        }
     }
 }
 
